@@ -8,6 +8,7 @@ import {Observable} from "rxjs/Observable";
 import 'rxjs/add/observable/combineLatest';
 import {ADD_TODO, REMOVE_TODO, TOGGLE_TODO} from './common/actions';
 
+
 @Component({
 	selector: `app-root`,
 	template: `
@@ -36,15 +37,21 @@ import {ADD_TODO, REMOVE_TODO, TOGGLE_TODO} from './common/actions';
     directives: [TodoList, TodoInput, FilterSelect],
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
+
+//flow = dispatch, reduce, new state, store
+
 export class AppComponent {
 	public todosModel$ : Observable<TodoModel>;
 	//faking an id for demo purposes
 	private id: number = 0;
 	
+	//inject the store
 	constructor(
 		private _store : Store<AppState>
 	){
+		//listen to the todos directly from the store
 		const todos$ = _store.select<Observable<Todo[]>>('todos');
+		//listen to the vis filters directly from the store, so when reducer is triggered we react
 		const visibilityFilter$ = _store.select('visibilityFilter');
 		/*
 			Each time todos or visibilityFilter emits a new value, get the last emitted value from the other observable.
@@ -59,6 +66,7 @@ export class AppComponent {
 				visibilityFilter$,
 				(todos : Array<Todo>, visibilityFilter : any) => {
 					return {
+						//reducer returns function so filter can do it's job
 						filteredTodos: todos.filter(visibilityFilter),
 						totalTodos: todos.length,
 						completedTodos: todos.filter((todo : Todo) => todo.complete).length
